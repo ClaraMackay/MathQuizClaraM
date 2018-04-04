@@ -5,7 +5,8 @@
 -- This program asks a math question, if you get a question wrong you lose a life, 
 -- and one of the 4 hearts disappear. 
 
-----------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+
 
 -- hide the status bar
 display.setStatusBar(display.HiddenStatusBar)
@@ -13,195 +14,245 @@ display.setStatusBar(display.HiddenStatusBar)
 -- sets the background colour
 display.setDefault("background", 16/255, 35/255, 104/255)
 
------------------------------------------------------------------
---LOCAL VARIABLES
------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+-- LOCAL VARIABLES
+-----------------------------------------------------------------------------------------------
 
 -- create local variables
 local questionObject
 local correctObject
 local incorrectObject
-local numericField 
+local numericField
 local randomNumber1
 local randomNumber2
 local userAnswer
 local correctAnswer
-
--- create more local variables
 local incorrectObject
+
+-- variables for the points
 local pointsObject
 local points = 0
-local formula
 
 -- variables for the timer
 local totalSeconds = 10
 local secondsLeft = 10
-local clockText
+local clockText 
 local countDownTimer
 
--- variables for the lives ands hearts
+-- variables for the lives
 local lives = 4
-local heart1 
+local heart1
 local heart2
 local heart3
 local heart4
+local gameOver
 
--- local variables for the sounds
-local correctSound = audio.loadSound("Sounds/wrongSound.mp3")
-local correctSoundChannel 
 
------------------------------------------------------------------
---LOCAL FUNCTIONS
------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
+-- SOUNDS
+-----------------------------------------------------------------------------------------------
+
+local incorrectSound = audio.loadSound("Sounds/wrongSound.mp3")
+local incorrectSoundChannel
+
+local gameOverSound = audio.loadSound("Sounds/wrongSound.mp3")
+local gameOverSoundChannel
+
+-----------------------------------------------------------------------------------------------
+-- LOCAL FUNCTIONS
+-----------------------------------------------------------------------------------------------
+
+local function AskQuestion()
+	-- generate 2 random numbers between max. and a min. number
+	randomNumber1 = math.random (10, 20)
+	randomNumber2 = math.random (10, 20)
+	randomNumber3 = math.random (0, 10)
+	randomNumber4 = math.random (0, 10)
+
+
+	-- generate random number for the operator
+	randomOperator = math.random(1, 3)
+
+	if (randomOperator == 1) then
+		--calculate the correct answer for addition
+		correctAnswer = randomNumber1 + randomNumber2
+		-- create question in text object for addition
+		questionObject.text = randomNumber1 .. " + " .. randomNumber2 .. " = "
+
+
+	elseif (randomOperator == 2) then
+		--calculate the correct answer for subtraction
+		correctAnswer = randomNumber1 - randomNumber2
+		-- create question in text object for subtraction
+		questionObject.text = randomNumber1 .. " - " .. randomNumber2 .. " = "
+		
+
+	elseif (randomOperator == 3) then
+		--calculate the correct answer for multiplication
+		correctAnswer = randomNumber3 * randomNumber4
+		-- create question in text object for multiplication
+		questionObject.text = randomNumber3 .. " x " .. randomNumber4 .. " = "
+	end
+end
+
+
+
 local function UpdateTime()
+
 	-- decrement the number of seconds
 	secondsLeft = secondsLeft - 1
 
 	-- display the number of seconds left in the clock object
 	clockText.text = secondsLeft .. ""
 
-	if (secondsLeft == 0 ) then 
-		-- reset the number of seconds left 
-		secondsLeft = totalSeconds 
-		lives = lives - 1 
+	-- handle the case when the timer runs out
+	if (secondsLeft == 0 ) then
 
+		-- reset the number of seconds left
+		secondsLeft = totalSeconds
+		lives = lives - 1
 
+		-- once the timer runs out ask a new question
+		AskQuestion()
+	end
+		-- *** IF THERE ARE NO LIVES LEFT, PLAY A LOSE SOUND, SHOW A YOU LOSE IMAGE
+		-- AND CANCEL THE TIMER REMOVE THE THIRD HEART BY MAKING IT INVISIBLE
+	if ( lives == 3 ) then
+		heart1.isVisible = false
+		
+	elseif (lives == 2) then
+		heart1.isVisible = false
+		heart2.isVisible = false
+
+	elseif (lives == 1 ) then
+		heart1.isVisible = false
+		heart2.isVisible = false
+		heart3.isVisible = false
+
+	elseif (lives == 0) then
+		heart1.isVisible = false
+		heart2.isVisible = false
+		heart3.isVisible = false
+		heart4.isVisible = false
+			
+		-- makes the clock invisible and  cancels the
+		clockText.isVisible = false
+		timer.cancel(countDownTimer)
+
+		-- makes gameOver visible and other objects invisible
+		gameOver.isVisible = true
+		gameOverSoundChannel = audio.play(gameOverSound)
+		questionObject.isVisible = false
+		correctObject.isVisible = false
+		incorrectObject.isVisible = false
+		numericField.isVisible = false
+		pointsObject.isVisible = false
 	end
 end
 
--- function that calls the timer 
+-- function that calls the timer
 local function StartTimer()
-	-- create a countdown timer that loops infinitely 
-	countDownTimer = timer.performWithDelay(1000, UpdateTime, 0)
+	-- create a countdown timer that loops for infinity
+	countDownTimer = timer.performWithDelay( 1000, UpdateTime, 0)
 end
-
-local function AskQuestion()
-
-	-- generate 2 random nuymbers between a max. and a min. number
-	randomNumber1 = math.random(1, 5)
-	randomNumber2 = math.random(1, 5)
-
-	-- randomizes formulas from addition to multiplication to subtraction
-
-	formula = math.random(0, 2)
-
-if (formula == 0) then
-
-	correctAnswer = randomNumber1 + randomNumber2
-
-	-- create question in text object
-	questionObject.text = randomNumber1 .. "+" .. randomNumber2 .. "="
-
-		elseif (formula == 1) then
-
-				-- calculates the correct answer
-				correctAnswer = randomNumber1 * randomNumber2
-
-				-- creates question in text object 
-				questionObject.text = randomNumber1 .. " x " .. randomNumber2 .. "="
-
-					elseif (formula == 1) then
-
-						-- calculates the correct answer
-						correctAnswer = randomNumber1 - randomNumber2
-
-						-- creates question in text object 
-						questionObject.text = randomNumber1 .. " - " .. randomNumber2 .. "="
-
-		end
-	end
-
 
 local function HideCorrect()
+	-- change the correct object to be invisible
 	correctObject.isVisible = false
 
+	-- call the function that ask the question
 	AskQuestion()
-
 end
 
 local function HideIncorrect()
+	-- change the incorrect object to be invisible
 	incorrectObject.isVisible = false
 
+	-- call the function that ask the question
 	AskQuestion()
-
 end
 
-local function Points()
-	--keeps track of the points 
-	points = points + 1 
-	pointsObject.text = "points = " .. points
-
-end
-
-
-local function UpdateHearts()
-	-- ***IF THERE ARE NO LIVES LEFT, PLAY A LOSE SOUND, SHOW A 
-		-- "YOU LOSE" IMAGE AND CANCEL THE TIMER, REMOVE THE THIRD 
-		-- HEART BY  MAKING IT INVISIBLE
-		if (lives == 4) then 
-			heart1.isVisible = true
-			heart2.isVisible = true
-			heart3.isVisible = true
-			heart4.isVisible = true
-
-		elseif (lives == 3) then 
-			heart1.isVisible = true
-			heart2.isVisible = true
-			heart3.isVisible = true
-			heart4.isVisible = false
-
-		elseif (lives == 2) then 
-			heart1.isVisible = true
-			heart2.isVisible = true
-			heart3.isVisible = false
-			heart4.isVisible = false
-
-		elseif (lives == 1) then 
-			heart1.isVisible = true
-			heart2.isVisible = false 
-			heart3.isVisible = false
-			heart4.isVisible = false
-
-		elseif (lives == 0) then
-			gameOver.isVisible = true
-			correctSoundChannel = audio.play(correctSound)
-
-		end
-
-		-- call the function to ask the question
-			AskQuestion()
-end
-
-
-function NumericFieldListener( event )
+local function NumericFieldListener( event )
+	
 	-- User begins editing "numericField"
-	if (event.phase == "began") then
+	if ( event.phase == "began" ) then
 
-		--clear text field
+		-- clear text field
 		event.target.text = ""
 
-		elseif event.phase == "submitted" then
+	elseif (event.phase == "submitted") then
 
-			-- when the answer is submitted (enter key is pressed) set user input to user's answer
-			userAnswer = tonumber(event.target.text)
+		-- when the answer is submitted (enter key is pressed) set user input to user's answer
+		userAnswer = tonumber(event.target.text)
 
-			-- if the users answer and the correct answer are the same:
-			if (userAnswer == correctAnswer) then
-				correctObject.isVisible = true
+		-- if the user answer and the correct answer are the same:
+		if (userAnswer == correctAnswer) then
+			correctObject.isVisible = true
 
-				-- calls points function
-				Points()
 
-				-- call the HideCorrect function after 4 seconds
-				timer.performWithDelay(4000, HideCorrect)
+			-- when the user gets it correct add one point to the code and display it in text
+			points = points + 1
+			pointsObject.text = "Points : " .. points
 
-			else 
-				incorrectObject.isVisible = true 
-				lives = lives - 1 
-				UpdateHearts()
-				timer.performWithDelay(4000, HideInorrect)
+			-- clear text field
+			event.target.text = ""
+
+			-- call the HideCorrect function after 2 seconds
+			timer.performWithDelay(2000, HideCorrect)
+		 
+		 else
+
+			incorrectObject.isVisible = true
+
+			-- clear text field
+			event.target.text = ""
+
+			-- play a sound when the user gets it incorrct
+			incorrectSoundChannel = audio.play(incorrectSound, {channel = 2})
+
+			lives = lives - 1
+
+
+			if (lives == 3) then
+			 	heart1.isVisible = false
+
+			elseif (lives == 2) then
+			 	heart1.isVisible = false
+			 	heart2.isVisible = false
+
+			elseif (lives == 1) then
+			 	heart1.isVisible = false
+			 	heart2.isVisible = false
+			 	heart3.isVisible = false
+
+			elseif (lives == 0) then
+			 	heart1.isVisible = false
+			 	heart2.isVisible = false
+			 	heart3.isVisible = false
+			 	heart4.isVisible = false
+
+			 -- makes the clock invisible and  cancels the
+			 	clockText.isVisible = false
+			 	timer.cancel(countDownTimer)
+
+			 -- makes gameOver visible and other objects invisible 
+			 	gameOver.isVisible = true
+			 	gameOverSoundChannel = audio.play(gameOverSound)
+			 	questionObject.isVisible = false
+			 	correctObject.isVisible = false
+			 	incorrectObject.isVisible = false
+			 	numericField.isVisible = false
+			 	pointsObject.isVisible = false
+
+			end
+
+		 	-- call the HideInCorrect function after 1 second
+			timer.performWithDelay(1000, HideIncorrect)
 
 		end
+
+		-- reset the number of seconds left
+		secondsLeft = totalSeconds + 1
 	end
 end
 
@@ -253,6 +304,9 @@ numericField.inputType = "number"
 -- add the event listener for the numeric field
 numericField:addEventListener("userInput", NumericFieldListener)
 
+clockText = display.newText(secondsLeft, 520, 600, native.systemFontBold, 150)
+clockText: setFillColor( 255/255, 255/255, 255/255 )
+
 -- create the game over screen
 gameOver = display.newImageRect("Images/gameOver.png", 1000, 900)
 gameOver.x = display.contentWidth /2 
@@ -265,3 +319,6 @@ gameOver.isVisible = false
 
 -- call the function to ask the question
 AskQuestion()
+
+-- call count down timer
+StartTimer()
