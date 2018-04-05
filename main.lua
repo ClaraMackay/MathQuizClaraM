@@ -61,17 +61,21 @@ local gameOverSoundChannel
 -----------------------------------------------------------------------------------------------
 -- LOCAL FUNCTIONS
 -----------------------------------------------------------------------------------------------
+local function answerText()
+		answerObject = display.newText ("the correct answer is ".. correctAnswer, 210, 120, "Georgia", 40)
+		answerObject.isVisible = false
+end
 
 local function AskQuestion()
 	-- generate 2 random numbers between max. and a min. number
 	randomNumber1 = math.random (10, 20)
-	randomNumber2 = math.random (10, 20)
-	randomNumber3 = math.random (0, 10)
-	randomNumber4 = math.random (0, 10)
+	randomNumber2 = math.random (1, 10)
+	randomNumber3 = math.random (1, 10)
+	randomNumber4 = math.random (1, 10)
 
 
 	-- generate random number for the operator
-	randomOperator = math.random(1, 3)
+	randomOperator = math.random(1, 4)
 
 	if (randomOperator == 1) then
 		--calculate the correct answer for addition
@@ -79,12 +83,14 @@ local function AskQuestion()
 		-- create question in text object for addition
 		questionObject.text = randomNumber1 .. " + " .. randomNumber2 .. " = "
 
+	
 
 	elseif (randomOperator == 2) then
 		--calculate the correct answer for subtraction
 		correctAnswer = randomNumber1 - randomNumber2
 		-- create question in text object for subtraction
 		questionObject.text = randomNumber1 .. " - " .. randomNumber2 .. " = "
+	
 		
 
 	elseif (randomOperator == 3) then
@@ -92,7 +98,18 @@ local function AskQuestion()
 		correctAnswer = randomNumber3 * randomNumber4
 		-- create question in text object for multiplication
 		questionObject.text = randomNumber3 .. " x " .. randomNumber4 .. " = "
+	
+		
+
+	elseif (randomOperator == 4) then
+		--calculate the correct answer for multiplication
+		correctAnswer = randomNumber3 / randomNumber4
+		-- create question in text object for multiplication
+		questionObject.text = randomNumber3 .. " ÷ " .. randomNumber4 .. " = "
+		
+		
 	end
+
 end
 
 
@@ -115,7 +132,7 @@ local function UpdateTime()
 		-- once the timer runs out ask a new question
 		AskQuestion()
 	end
-		-- *** IF THERE ARE NO LIVES LEFT, PLAY A LOSE SOUND, SHOW A YOU LOSE IMAGE
+		-- IF THERE ARE NO LIVES LEFT, PLAY A LOSE SOUND, SHOW A YOU LOSE IMAGE
 		-- AND CANCEL THE TIMER REMOVE THE THIRD HEART BY MAKING IT INVISIBLE
 	if ( lives == 3 ) then
 		heart1.isVisible = false
@@ -172,6 +189,8 @@ local function HideIncorrect()
 	AskQuestion()
 end
 
+
+
 local function NumericFieldListener( event )
 	
 	-- User begins editing "numericField"
@@ -204,6 +223,7 @@ local function NumericFieldListener( event )
 
 			incorrectObject.isVisible = true
 
+			answerObject = display.newText ("the correct answer is ".. correctAnswer, 210, 120, "Georgia", 40)
 			-- clear text field
 			event.target.text = ""
 
@@ -248,7 +268,8 @@ local function NumericFieldListener( event )
 
 		 	-- call the HideInCorrect function after 1 second
 			timer.performWithDelay(1000, HideIncorrect)
-
+			timer.performWithDelay(1000, HideAnswerObject)
+			
 		end
 
 		-- reset the number of seconds left
@@ -256,7 +277,10 @@ local function NumericFieldListener( event )
 	end
 end
 
-
+local function HideAnswerObject()
+	-- change the answer object to be invisible
+	answerObject.isVisible = false
+end
 --------------------------------------------------------------------------------
 --OBJECT CREATION
 --------------------------------------------------------------------------------
@@ -313,6 +337,7 @@ gameOver.x = display.contentWidth /2
 gameOver.y = display.contentHeight /2
 gameOver.isVisible = false
 
+answerObject = display.newText ("the correct answer is ".. correctAnswer, 210, 120, "Georgia", 40)
 -------------------------------------------------------------------------------
 --FUNCTION CALLS
 -------------------------------------------------------------------------------
@@ -322,3 +347,4 @@ AskQuestion()
 
 -- call count down timer
 StartTimer()
+
